@@ -9,6 +9,8 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.Layout;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,6 +19,7 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,15 +31,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class EditTask extends AppCompatActivity implements View.OnTouchListener {
+public class EditTask extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1;
     private TextView _tv;
     private EditText _et;
+    private LinearLayout _layout;
     private String _date, _name, _type;
     private ImageView _img;
     private CheckBox _ch;
     private ArrayList<Task> _tasks;
     private int _position;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +51,28 @@ public class EditTask extends AppCompatActivity implements View.OnTouchListener 
         this._tv = findViewById(R.id.etaskdate);
         this._et = findViewById(R.id.etaskname);
         this._img = findViewById(R.id.image);
+        this._layout = findViewById(R.id.miLayout);
+
+        _layout.setOnTouchListener(new OnSwipeTouchListener(this) {
+            public void onSwipeTop() {
+            }
+
+            public void onSwipeRight() {
+                swiping(false);
+
+
+            }
+
+            public void onSwipeLeft() {
+
+                swiping(true);
+
+            }
+
+            public void onSwipeBottom() {
+            }
+
+        });
 
         if (getIntent().getExtras() != null) {
             Bitmap bmp = BitmapFactory.decodeByteArray(getIntent().getByteArrayExtra("image"), 0, getIntent().getByteArrayExtra("image").length);
@@ -59,6 +86,8 @@ public class EditTask extends AppCompatActivity implements View.OnTouchListener 
             }
             this._type = "edit";
             this._tasks = getIntent().getParcelableExtra("tascas");
+            Toast.makeText(this, "LMAO TASK IS " + _tasks.size(), Toast.LENGTH_SHORT).show();//Toast per a avisar a l'usuari
+
         } else {
             _date = new Date().toString();
             this._ch.setEnabled(false);
@@ -73,7 +102,6 @@ public class EditTask extends AppCompatActivity implements View.OnTouchListener 
         getMenuInflater().inflate(R.menu.create_task_menu, menu);
         return true;
     }
-
 
     public void save(MenuItem mi) {
         _name = _et.getText().toString();
@@ -90,6 +118,7 @@ public class EditTask extends AppCompatActivity implements View.OnTouchListener 
                 if (this._ch.isChecked()) {
                     resultIntent.putExtra("done", "true");
                     Date date = new Date();
+                    //TODO cambiar formato fecha
                     String _date = date.toString();
                 } else {
                     resultIntent.putExtra("done", "false");
@@ -98,48 +127,9 @@ public class EditTask extends AppCompatActivity implements View.OnTouchListener 
             }
             resultIntent.putExtra("date", _date);
             setResult(RESULT_OK, resultIntent);
+
             finish();
 
-
-        }
-    }
-
-    public void swiped(int contador) {
-        switch (contador) {
-            case 1:
-                Toast.makeText(this, "Right", Toast.LENGTH_SHORT).show();
-                if (_position < _tasks.size()) {
-                    Intent i = new Intent(getBaseContext(), EditTask.class);
-//                    i.putExtra("id", _tasks.get(_position++).getId());
-//                    i.putExtra("image", _tasks.get(_position++).getImage());
-//                    i.putExtra("name", _tasks.get(_position++).getName());
-//                    i.putExtra("date", _tasks.get(_position++).getDate());
-//                    i.putExtra("done", _tasks.get(_position++).getDone());
-//                    i.putExtra("tascas", _tasks);
-//                    i.putExtra("posicion", _position++);
-//                    startActivityForResult(i, 2);
-                } else {
-
-                      Toast.makeText(this, "There is no task after this one", Toast.LENGTH_SHORT).show();
-                }
-                break;
-            case 2:
-                Toast.makeText(this, "Left", Toast.LENGTH_SHORT).show();
-
-                if (_position < 0) {
-//                    Intent i = new Intent(getBaseContext(), EditTask.class);
-//                    i.putExtra("id", _tasks.get(_position--).getId());
-//                    i.putExtra("image", _tasks.get(_position--).getImage());
-//                    i.putExtra("name", _tasks.get(_position--).getName());
-//                    i.putExtra("date", _tasks.get(_position--).getDate());
-//                    i.putExtra("done", _tasks.get(_position--).getDone());
-//                    i.putExtra("tascas", _tasks);
-//                    i.putExtra("posicion", _position--);
-//                    startActivityForResult(i, 2);
-                } else {
-                  Toast.makeText(this, "There is no previous task", Toast.LENGTH_SHORT).show();
-                }
-                break;
         }
     }
 
@@ -162,70 +152,6 @@ public class EditTask extends AppCompatActivity implements View.OnTouchListener 
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), 1);
     }
 
-    private final GestureDetector gestureDetector;
-
-    public EditTask(Context ctx) {
-        gestureDetector = new GestureDetector(ctx, new GestureListener());
-    }
-
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        return gestureDetector.onTouchEvent(event);
-    }
-
-    private final class GestureListener extends GestureDetector.SimpleOnGestureListener {
-
-        private static final int SWIPE_THRESHOLD = 100;
-        private static final int SWIPE_VELOCITY_THRESHOLD = 100;
-
-        @Override
-        public boolean onDown(MotionEvent e) {
-            return true;
-        }
-
-        @Override
-        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            boolean result = false;
-            try {
-                float diffY = e2.getY() - e1.getY();
-                float diffX = e2.getX() - e1.getX();
-                if (Math.abs(diffX) > Math.abs(diffY)) {
-                    if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
-                        if (diffX > 0) {
-                            onSwipeRight();
-                        } else {
-                            onSwipeLeft();
-                        }
-                        result = true;
-                    }
-                } else if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
-                    if (diffY > 0) {
-                        onSwipeBottom();
-                    } else {
-                        onSwipeTop();
-                    }
-                    result = true;
-                }
-            } catch (Exception exception) {
-                exception.printStackTrace();
-            }
-            return result;
-        }
-    }
-
-    public void onSwipeRight() {
-        swiped(1);
-    }
-
-    public void onSwipeLeft() {
-        swiped(2);
-    }
-
-    public void onSwipeTop() {
-    }
-
-    public void onSwipeBottom() {
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -246,5 +172,63 @@ public class EditTask extends AppCompatActivity implements View.OnTouchListener 
             }
         }
 
+    }
+
+    public void swiping(boolean derecha) {
+        if (derecha) {
+            if (_position < _tasks.size()) {
+                Intent i = new Intent(this, EditTask.class);
+                i.putExtra("id", _tasks.get(_position+1).getId());
+                i.putExtra("image", _tasks.get(_position+1).getImage());
+                i.putExtra("name", _tasks.get(_position+1).getName());
+                i.putExtra("date", _tasks.get(_position+1).getDate());
+                i.putExtra("done", _tasks.get(_position+1).getDone());
+                i.putExtra("tascas", _tasks);
+                i.putExtra("posicion", _position+1);
+                startActivityForResult(i, 2);
+                Toast.makeText(this, "SUUUU HE CAMBIAO DERECHA 1" + _position, Toast.LENGTH_SHORT).show();//Toast per a avisar a l'usuari
+            } else {
+
+                Intent i = new Intent(this, EditTask.class);
+                i.putExtra("id", _tasks.get(0).getId());
+                i.putExtra("image", _tasks.get(0).getImage());
+                i.putExtra("name", _tasks.get(0).getName());
+                i.putExtra("date", _tasks.get(0).getDate());
+                i.putExtra("done", _tasks.get(0).getDone());
+                i.putExtra("tascas", _tasks);
+                i.putExtra("posicion", 0);
+                startActivityForResult(i, 2);
+                Toast.makeText(this, "SUUUU HE CAMBIAO DERECHA 2" + _position, Toast.LENGTH_SHORT).show();//Toast per a avisar a l'usuari
+            }
+        }else{
+
+            if (_position > 0) {
+
+                Intent i = new Intent(this, EditTask.class);
+                        i.putExtra("id", _tasks.get(_position-1).getId());
+                        i.putExtra("image", _tasks.get(_position-1).getImage());
+                        i.putExtra("name", _tasks.get(_position-1).getName());
+                        i.putExtra("date", _tasks.get(_position-1).getDate());
+                        i.putExtra("done", _tasks.get(_position-1).getDone());
+                        i.putExtra("tascas", _tasks);
+                        i.putExtra("posicion", _position-1);
+                        startActivityForResult(i, 2);
+                       Toast.makeText(this, "SUUUU HE CAMBIAO IZQUIERDA 1 " + _position, Toast.LENGTH_SHORT).show();//Toast per a avisar a l'usuari
+
+            }else{
+
+                        Intent i = new Intent(this, EditTask.class);
+                        i.putExtra("id", _tasks.get(_tasks.size()).getId());
+                        i.putExtra("image", _tasks.get(_tasks.size()).getImage());
+                        i.putExtra("name", _tasks.get(_tasks.size()).getName());
+                        i.putExtra("date", _tasks.get(_tasks.size()).getDate());
+                        i.putExtra("done", _tasks.get(_tasks.size()).getDone());
+                        i.putExtra("tascas", _tasks);
+                        i.putExtra("posicion", _position);
+                        startActivityForResult(i, 2);
+                        Toast.makeText(this, "SUUUU HE CAMBIAO IZQUIERDA 2 " + _position, Toast.LENGTH_SHORT).show();//Toast per a avisar a l'usuari
+
+            }
+        }
     }
 }
