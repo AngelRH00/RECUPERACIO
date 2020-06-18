@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,12 +18,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
-public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder>{
+public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
 
     private ArrayList<Task> _tasks;
     private OnNoteListener mOnNoteListener;
     private Context _context;
     private Cursor _cu;
+    private LinearLayout l;
 
     public RecyclerAdapter(ArrayList<Task> tasks, OnNoteListener mOnNoteListener, Context context, Cursor _cu) {
         this._tasks = tasks;
@@ -36,7 +38,8 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater li = LayoutInflater.from(_context);
         View v = li.inflate(R.layout.row, parent, false);
-        return new ViewHolder(v,mOnNoteListener);
+
+        return new ViewHolder(v, mOnNoteListener);
     }
 
     @Override
@@ -50,13 +53,13 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     }
 
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener  {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private OnNoteListener onNoteListener;
         private ImageView _imagen;
-        private TextView _tv1,_tv2;
+        private TextView _tv1, _tv2;
         private CheckBox _ch;
 
-        public ViewHolder(@NonNull View itemView,OnNoteListener onNoteListener) {
+        public ViewHolder(@NonNull View itemView, OnNoteListener onNoteListener) {
             super(itemView);
             this._imagen = itemView.findViewById(R.id.imageView);
             this._tv1 = itemView.findViewById(R.id.taskid);
@@ -66,16 +69,16 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
             itemView.setOnClickListener(this);
         }
 
-        public void bind(Task t){
-            Bitmap bmp = BitmapFactory.decodeByteArray(t.getImage() , 0, t.getImage().length);
+        public void bind(Task t) {
+            Bitmap bmp = BitmapFactory.decodeByteArray(t.getImage(), 0, t.getImage().length);
 
             this._imagen.setImageBitmap(bmp);
             this._tv1.setText(t.getName());
             this._tv2.setText(t.getDate());
-            if(t.getDone().equals("true")){
+            if (t.getDone().equals("true")) {
                 this._ch.setChecked(true);
                 this._ch.setEnabled(false);
-            }else this._ch.setChecked(false);
+            } else this._ch.setChecked(false);
             _ch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

@@ -10,20 +10,24 @@ import android.os.Bundle;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Adapter;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -33,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerAdapter.O
     private Boolean all;
     private MyDB _db;
     private RecyclerView _rv;
+    private RecyclerAdapter ra;
     private ArrayList<Task> _tasks;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -78,6 +83,26 @@ public class MainActivity extends AppCompatActivity implements RecyclerAdapter.O
                         }).show();
             }
         });
+
+        ItemTouchHelper.SimpleCallback helper = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                int pos = viewHolder.getAdapterPosition();
+                Toast.makeText(MainActivity.this, "Task deleted Succesfully", Toast.LENGTH_SHORT).show();//Toast per a avisar a l'usuari
+                _tasks.remove(viewHolder.getAdapterPosition()-1);
+                _db.deleteItem(_tasks.get(viewHolder.getAdapterPosition()).getId()-1);
+                setAdapter();
+            }
+
+        };
+        ItemTouchHelper itemTouch = new ItemTouchHelper(helper);
+        itemTouch.attachToRecyclerView(_rv);
+
     }
 
     @Override
@@ -108,17 +133,21 @@ public class MainActivity extends AppCompatActivity implements RecyclerAdapter.O
         _tasks = new ArrayList<Task>();
         if (c.getCount() > 0) {//Revisar Sintaxis?
             do {
-                _tasks.add(new Task(c.getInt(0),c.getBlob(1), c.getString(2), c.getString(3), c.getString(4)));
+                _tasks.add(new Task(c.getInt(0), c.getBlob(1), c.getString(2), c.getString(3), c.getString(4)));
             } while (c.moveToNext());
         }
-        RecyclerAdapter ra = new RecyclerAdapter(_tasks, this, this, c);
+        ra = new RecyclerAdapter(_tasks, this, this, c);
         _rv.setAdapter(ra);
         _rv.setLayoutManager(new LinearLayoutManager(this));
     }
 
     public void updateAdapter(int pos) {//Quan cambiam una checkbox a true
         _tasks.get(pos).setDone("true");
-        _db.updateRecords(_tasks.get(pos).getId(),_tasks.get(pos).getImage(), _tasks.get(pos).getName(), new Date().toString(), "true");
+        String _date = "error";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, d MMM yyyy, HH:mm a");
+        _date = simpleDateFormat.format(new Date());
+
+        _db.updateRecords(_tasks.get(pos).getId(), _tasks.get(pos).getImage(), _tasks.get(pos).getName(), _date, "true");
         setAdapter();
     }
 
@@ -134,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerAdapter.O
 
     @Override
     public void onNoteClick(int position) {
-        if(!_tasks.get(position).getDone().equals("true")) {
+        if (!_tasks.get(position).getDone().equals("true")) {
             Intent i = new Intent(this, EditTask.class);
             i.putExtra("id", _tasks.get(position).getId());
             i.putExtra("image", _tasks.get(position).getImage());
@@ -142,10 +171,9 @@ public class MainActivity extends AppCompatActivity implements RecyclerAdapter.O
             i.putExtra("date", _tasks.get(position).getDate());
             i.putExtra("done", _tasks.get(position).getDone());
             i.putExtra("tascas", _tasks);
-            i.putExtra("posicion",position);
+            i.putExtra("posicion", position);
             startActivityForResult(i, 2);
-        }
-        else{
+        } else {
             Toast.makeText(this, "Completed Tasks are not editable", Toast.LENGTH_SHORT).show();//Toast per a avisar a l'usuari
         }
     }
@@ -154,16 +182,16 @@ public class MainActivity extends AppCompatActivity implements RecyclerAdapter.O
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == 1){//Result de Crear Task
-            if(resultCode == RESULT_OK){//Revisar tema size
+        if (requestCode == 1) {//Result de Crear Task
+            if (resultCode == RESULT_OK) {//Revisar tema size
                 _db.createRecords(data.getByteArrayExtra("image"), data.getStringExtra("name"), data.getStringExtra("date"), "false");
                 Toast.makeText(this, "Task Saved", Toast.LENGTH_SHORT).show();//Toast per a avisar a l'usuari
                 setAdapter();
             }
         }
-        if (requestCode == 2){//Result d'editar task
-            if (resultCode == RESULT_OK){
-                _db.updateRecords(data.getIntExtra("id",0),data.getByteArrayExtra("image"), data.getStringExtra("name"), data.getStringExtra("date"), data.getStringExtra("done"));
+        if (requestCode == 2) {//Result d'editar task
+            if (resultCode == RESULT_OK) {
+                _db.updateRecords(data.getIntExtra("id", 0), data.getByteArrayExtra("image"), data.getStringExtra("name"), data.getStringExtra("date"), data.getStringExtra("done"));
                 Toast.makeText(this, "Task Updated", Toast.LENGTH_SHORT).show();//Toast per a avisar a l'usuari
                 setAdapter();
             }

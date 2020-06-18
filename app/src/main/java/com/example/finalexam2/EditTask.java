@@ -28,6 +28,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -86,10 +87,10 @@ public class EditTask extends AppCompatActivity {
             }
             this._type = "edit";
             this._tasks = getIntent().getParcelableExtra("tascas");
-            Toast.makeText(this, "LMAO TASK IS " + _tasks.size(), Toast.LENGTH_SHORT).show();//Toast per a avisar a l'usuari
 
         } else {
-            _date = new Date().toString();
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, d MMM yyyy, HH:mm a");
+            _date = simpleDateFormat.format(new Date());
             this._ch.setEnabled(false);
             this._type = "create";
         }
@@ -108,18 +109,20 @@ public class EditTask extends AppCompatActivity {
         if (_name.equals("")) {
             Toast.makeText(EditTask.this, "No has insertat totes les dades", Toast.LENGTH_SHORT).show();
         } else {
+
             Intent resultIntent = new Intent();
             Drawable d = _img.getDrawable();
-
             resultIntent.putExtra("image", imgToByte(d));
+
             resultIntent.putExtra("name", _name);
 
             if (_type.equals("edit")) {
                 if (this._ch.isChecked()) {
                     resultIntent.putExtra("done", "true");
-                    Date date = new Date();
-                    //TODO cambiar formato fecha
-                    String _date = date.toString();
+
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, d MMM yyyy, HH:mm a");
+                    _date = simpleDateFormat.format(new Date());
+
                 } else {
                     resultIntent.putExtra("done", "false");
                 }
@@ -178,13 +181,13 @@ public class EditTask extends AppCompatActivity {
         if (derecha) {
             if (_position < _tasks.size()) {
                 Intent i = new Intent(this, EditTask.class);
-                i.putExtra("id", _tasks.get(_position+1).getId());
-                i.putExtra("image", _tasks.get(_position+1).getImage());
-                i.putExtra("name", _tasks.get(_position+1).getName());
-                i.putExtra("date", _tasks.get(_position+1).getDate());
-                i.putExtra("done", _tasks.get(_position+1).getDone());
+                i.putExtra("id", _tasks.get(_position + 1).getId());
+                i.putExtra("image", _tasks.get(_position + 1).getImage());
+                i.putExtra("name", _tasks.get(_position + 1).getName());
+                i.putExtra("date", _tasks.get(_position + 1).getDate());
+                i.putExtra("done", _tasks.get(_position + 1).getDone());
                 i.putExtra("tascas", _tasks);
-                i.putExtra("posicion", _position+1);
+                i.putExtra("posicion", _position + 1);
                 startActivityForResult(i, 2);
                 Toast.makeText(this, "SUUUU HE CAMBIAO DERECHA 1" + _position, Toast.LENGTH_SHORT).show();//Toast per a avisar a l'usuari
             } else {
@@ -200,33 +203,33 @@ public class EditTask extends AppCompatActivity {
                 startActivityForResult(i, 2);
                 Toast.makeText(this, "SUUUU HE CAMBIAO DERECHA 2" + _position, Toast.LENGTH_SHORT).show();//Toast per a avisar a l'usuari
             }
-        }else{
+        } else {
 
             if (_position > 0) {
 
                 Intent i = new Intent(this, EditTask.class);
-                        i.putExtra("id", _tasks.get(_position-1).getId());
-                        i.putExtra("image", _tasks.get(_position-1).getImage());
-                        i.putExtra("name", _tasks.get(_position-1).getName());
-                        i.putExtra("date", _tasks.get(_position-1).getDate());
-                        i.putExtra("done", _tasks.get(_position-1).getDone());
-                        i.putExtra("tascas", _tasks);
-                        i.putExtra("posicion", _position-1);
-                        startActivityForResult(i, 2);
-                       Toast.makeText(this, "SUUUU HE CAMBIAO IZQUIERDA 1 " + _position, Toast.LENGTH_SHORT).show();//Toast per a avisar a l'usuari
+                i.putExtra("id", _tasks.get(_position - 1).getId());
+                i.putExtra("image", _tasks.get(_position - 1).getImage());
+                i.putExtra("name", _tasks.get(_position - 1).getName());
+                i.putExtra("date", _tasks.get(_position - 1).getDate());
+                i.putExtra("done", _tasks.get(_position - 1).getDone());
+                i.putExtra("tascas", _tasks);
+                i.putExtra("posicion", _position - 1);
+                startActivityForResult(i, 2);
+                Toast.makeText(this, "SUUUU HE CAMBIAO IZQUIERDA 1 " + _position, Toast.LENGTH_SHORT).show();//Toast per a avisar a l'usuari
 
-            }else{
+            } else {
 
-                        Intent i = new Intent(this, EditTask.class);
-                        i.putExtra("id", _tasks.get(_tasks.size()).getId());
-                        i.putExtra("image", _tasks.get(_tasks.size()).getImage());
-                        i.putExtra("name", _tasks.get(_tasks.size()).getName());
-                        i.putExtra("date", _tasks.get(_tasks.size()).getDate());
-                        i.putExtra("done", _tasks.get(_tasks.size()).getDone());
-                        i.putExtra("tascas", _tasks);
-                        i.putExtra("posicion", _position);
-                        startActivityForResult(i, 2);
-                        Toast.makeText(this, "SUUUU HE CAMBIAO IZQUIERDA 2 " + _position, Toast.LENGTH_SHORT).show();//Toast per a avisar a l'usuari
+                Intent i = new Intent(this, EditTask.class);
+                i.putExtra("id", _tasks.get(_tasks.size()).getId());
+                i.putExtra("image", _tasks.get(_tasks.size()).getImage());
+                i.putExtra("name", _tasks.get(_tasks.size()).getName());
+                i.putExtra("date", _tasks.get(_tasks.size()).getDate());
+                i.putExtra("done", _tasks.get(_tasks.size()).getDone());
+                i.putExtra("tascas", _tasks);
+                i.putExtra("posicion", _position);
+                startActivityForResult(i, 2);
+                Toast.makeText(this, "SUUUU HE CAMBIAO IZQUIERDA 2 " + _position, Toast.LENGTH_SHORT).show();//Toast per a avisar a l'usuari
 
             }
         }

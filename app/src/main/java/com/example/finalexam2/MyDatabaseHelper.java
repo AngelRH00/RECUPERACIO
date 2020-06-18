@@ -21,8 +21,8 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
     // Method is called during creation of the database
     @Override
     public void onCreate(SQLiteDatabase database) {
-     //   database.execSQL("DROP TABLE IF EXISTS Tasks") /*Si volem reiniciar*/;
-     //   database.execSQL(DATABASE_CREATE);
+        //  database.execSQL("DROP TABLE IF EXISTS Tasks") /*Si volem reiniciar*/;
+        // database.execSQL(DATABASE_CREATE);
     }
 
     // Method is called during an upgrade of the database,
